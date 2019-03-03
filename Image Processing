@@ -1,0 +1,68 @@
+## Calling Library for loading image and Reading data from Image
+
+library(tools)
+library(exifr)
+library(dplyr)
+library(leaflet)
+library(imager)
+
+## Reading  Image from local Directory
+image<-list.files("D:/R/Images") 
+View(image)
+print(image)
+## no. file contained by the image
+length(image)
+class(image)
+## structure of the image variable it holds all the file in the image
+str(image)     
+
+## To read the exif data of image:
+ed=read_exif(image)
+length(ed)  ## No of all the attributes  2017
+names(ed)   ## List of all the attributes
+View(ed)    ## View all exif detail in tabular form
+## to read selected exif data of image
+ed1= read_exif(image, tags = c("SourceFile","FileName", "imagesize","Software",
+                                     "ShootingMode", "Model","ExposureTime","FNumber",
+                                    "ISO","Flash","FocalLength","LightSource","WhiteBalance",
+                                    "FocusMode","Aperture"))
+print(as.data.frame(ed1))
+## Writing/storing exif data of image to csv file:
+csv_data=write.csv(ed, 'Exifdata_images.csv', row.names = F)
+#######################################################################
+# Low Quality Image
+text= tesseract::ocr("dog.png", engine = eng)
+cat(text)
+#Improving the image quality using magick package
+library(magick)
+input <- image_read("dog.png")
+text <- input %>%
+  image_resize("2000x") %>%
+  image_convert(type = 'Grayscale') %>%
+  image_trim(fuzz = 40) %>%
+  image_write( density = '300x300') %>%
+  tesseract::ocr() 
+cat(text)
+result= tesseract::ocr_data("dog.png",engine=eng)
+print(result, n = 20) 
+# read from pdf
+# convert the pdf to png file and then perform tesseract
+pngfile <- pdftools::pdf_convert('OUTFIT Declaration form.pdf', dpi = 600)
+text <- tesseract::ocr(pngfile)
+cat(text)
+# List all parameters with *colour* in name or description
+tesseract_params('colour')
+#tessedit_char_whitelist which restricts the output to a limited set of characters.
+#This may be useful for reading for example numbers such as a bank account, 
+#zip code, or gas meter.
+numbers <- tesseract(options = list(tessedit_char_whitelist = ".0123456789"))
+cat(ocr("dog.png", engine = numbers))
+numbers <- tesseract(options = list(tessedit_char_whitelist = "$.0123456789"))
+cat(ocr("receipt.png", engine = numbers))
+# only numbers without the $
+numbers <- tesseract(options = list(tessedit_char_whitelist = ".0123456789"))
+cat(ocr("receipt.png", engine = numbers)) 
+# how this forces tesseract to detect a number (3 or 8 or 5) 
+# if we rule out the dollar sign.  
+
+
